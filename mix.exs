@@ -22,9 +22,12 @@ defmodule Nrepl.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:bento, "~> 0.9"}
+      # {:bento, "~> 0.9"},
+      # {:bencode, "~> 0.3.0"}
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:uuid, "~> 1.1.8"},
+      {:bento, git: "https://github.com/fazzone/bento.git", branch: "master"}
     ]
   end
 end
