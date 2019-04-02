@@ -7,7 +7,6 @@ defmodule IOCapture do
   end
 
   def handle_info({msg, from, reply_as, req}, state) do
-    IO.inspect(from, label: "handle info from")
     case msg do
       :io_request -> io_request(from, reply_as, req, state)
       _ -> nil

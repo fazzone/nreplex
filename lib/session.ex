@@ -41,8 +41,7 @@ defmodule Session do
     		 {result, new_bindings} = Code.eval_string(code, bindings)
     		 {:ok, result, new_bindings}
     	       catch
-    		 kind, error ->
-    		   {:err, Exception.format(kind, error, __STACKTRACE__)}
+    		 kind, error -> {:err, Exception.format(kind, error, __STACKTRACE__)}
     	       end
       send(me, result)
     end)
@@ -75,7 +74,7 @@ defmodule Session do
 	after
 	  :ok = GenServer.cast(transport, response(state, msg, status: [:done]))
 	end
-      other  ->
+      other ->
 	{:error, "unhandled operation!"} 
     end
   end
