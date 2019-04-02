@@ -7,7 +7,6 @@ defmodule Server do
 
   def accept(sock) do
     {:ok, client} = :gen_tcp.accept(sock)
-    IO.inspect(client, label: "connected")
     Task.start_link(fn -> handle(client) end)
     accept(sock)
   end
@@ -19,28 +18,16 @@ defmodule Server do
   end
 
   def handle(sock) do
-    with {:ok, transport} <- GenServer.start_link(Transport, sock),
-	 {:ok, manager} <- GenServer.start_link(SessionManager, transport) do
+    with {:ok, transport} <- Transport.wrap_socket(sock),
+	 {:ok, manager} <- SessionManager.wrap_transport(transport) do
       loop(transport, manager)
     end
   end
 
   def loop(transport, session_manager) do
     data = GenServer.call(transport, :read, :infinity)
-    IO.inspect(session_manager, label: "manager")
-    IO.inspect(data, label: "received") 
-    # case data do
-    #   %{"op" => op, "id" => id} -> IO.puts("ok")
-    #   other_data ->
-    # 	IO.inspect(other_data, label: "did not understand")
-    # end
-    #GenServer.cast(transport, GenServer.call(session_manager, data))
     :ok = GenServer.call(session_manager, data)
     loop(transport, session_manager)
-  end
-
-  defp response_for(%{}) do
-    nil
   end
 
   def read1(sock, rest \\ []) do

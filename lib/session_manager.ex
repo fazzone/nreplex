@@ -1,7 +1,14 @@
 defmodule SessionManager do
+  # Keep track of all of the unique sessions.
+  # Handle clone, interrupt, close, ls-sessions
+  
   use GenServer
 
   defstruct transport: nil, sessions_map: %{}
+
+  def wrap_transport(transport) do
+    GenServer.start_link(__MODULE__, transport)
+  end
 
   def init(transport) do
     {:ok, %SessionManager{transport: transport}}
@@ -16,21 +23,16 @@ defmodule SessionManager do
   end
 
   def handle_call(msg, from, state = %SessionManager{transport: transport, sessions_map: sessions}) do
-    IO.inspect(msg, label: "sess mgr called")
     with %{"op" => op, "id" => id} <- msg do
       case op do
 	"clone" ->
-	  #new_id = 1 + map_size(sessions)
 	  new_id = new_session_id(sessions)
-	  #new_session = spawn_link(fn -> Session.loop(new_id) end)
-	  {:ok, new_session} = GenServer.start_link(Session, {new_id, transport})
-	  GenServer.cast(transport, %{"id" => id, "new-session" => new_id, "status" => [:done]})
+	  {:ok, new_session} = Session.new(new_id, transport)
+	  Session.reply(new_session, msg, [{:status, [:done]}, {"new-session", new_id}])
 	  {:reply, :ok, %SessionManager{transport: transport, sessions_map:  Map.put(sessions, new_id, new_session)}}
 	other ->
 	  %{"session" => ses_id} = msg
-	  session = Map.get(sessions, ses_id)
-	  IO.inspect(session, label: "got session")
-	  :ok = GenServer.call(session, msg)
+	  :ok = GenServer.call(Map.get(sessions, ses_id), msg)
 	  {:reply, :ok, state}
       end
     end

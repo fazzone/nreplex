@@ -3,6 +3,12 @@ defmodule Transport do
 
   defstruct sock: nil, rest: []
 
+  def wrap_socket(sock) do
+    GenServer.start_link(__MODULE__, sock)
+  end
+
+  #callbacks
+
   def init(sock) do
     {:ok, %Transport{sock: sock}}
   end
@@ -14,7 +20,6 @@ defmodule Transport do
   end
 
   def handle_cast(resp, state = %Transport{sock: sock}) do
-    IO.inspect(resp, label: "handle_cast got")
     with {:ok, encoded} <- Bento.encode(resp),
 	 :ok <- :gen_tcp.send(sock, encoded) do
       {:noreply, state}
