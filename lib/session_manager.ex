@@ -29,7 +29,7 @@ defmodule SessionManager do
 	  new_id = new_session_id(sessions)
 	  {:ok, new_session} = Session.new(new_id, transport)
 	  Session.reply(new_session, msg, [{:status, [:done]}, {"new-session", new_id}])
-	  {:reply, :ok, %SessionManager{transport: transport, sessions_map:  Map.put(sessions, new_id, new_session)}}
+	  {:reply, :ok, %SessionManager{state | sessions_map:  Map.put(sessions, new_id, new_session)}}
 	other ->
 	  %{"session" => ses_id} = msg
 	  :ok = GenServer.call(Map.get(sessions, ses_id), msg)

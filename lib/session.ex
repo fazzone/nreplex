@@ -38,8 +38,7 @@ defmodule Session do
     Task.start_link(fn ->
       Process.group_leader(self(), capture_pid)
       result = try do
-    		 {result, new_bindings} = Code.eval_string(code, bindings)
-    		 {:ok, result, new_bindings}
+    		 {:ok, Code.eval_string(code, bindings)}
     	       catch
     		 kind, error -> {:err, Exception.format(kind, error, __STACKTRACE__)}
     	       end
@@ -64,7 +63,7 @@ defmodule Session do
       %{"op" => "eval"} ->
 	try do
 	  case eval_capture(state, msg) do
-	    {:ok, result, new_bindings} ->
+	    {:ok, {result, new_bindings}} ->
 	      :ok = GenServer.cast(transport, response(state, msg, value: inspect(result)))
 	      {:reply, :ok, %Session{state | bindings: bindings ++ new_bindings}}
 	    {:err, error} ->
